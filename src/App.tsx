@@ -1,14 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from './components/ui/button'
 
 
 import { AccordionDemo } from './components/AccordionDemo'
 import { LoginForm } from './components/login-form'
 import DoctorCard from './components/Doctor-card-component'
+import { useNavigate } from 'react-router'
 
 
 function App() {
-  const [count, setCount] = useState<number>(0)
+  const navigate = useNavigate();
+  useEffect(()=>{
+navigate("/login")
+  },[]);
 
   return (
     <>
