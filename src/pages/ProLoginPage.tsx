@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 export default function ProLoginPage() {
   const [username, setUsername] = useState("");
@@ -7,9 +7,17 @@ export default function ProLoginPage() {
   const navigate = useNavigate();
 
   const onSubmit = (e: React.FormEvent) => {
-    navigate("/select")
-   // e.preventDefault();
-   // alert(`Logging in with username: ${username}`);
+    e.preventDefault(); // ⛔ empêcher le refresh
+
+    // ✅ Condition login
+    if (
+      (username === "promotion1@care.tn" && password === "1234") ||
+      (username === "promotion2@care.tn" && password === "123")
+    ) {
+      navigate("/select"); // ✅ Redirection OK
+    } else {
+      alert("Adresse ou mot de passe incorrect !");
+    }
   };
 
   return (
@@ -25,11 +33,6 @@ export default function ProLoginPage() {
         className="relative z-10 mb-4 h-40 w-auto select-none"
       />
 
-      {/* Title */}
-     {/*  <h1 className="relative z-10 mb-8 text-3xl font-extrabold tracking-wide text-white select-none">
-        laboratoires pharmacare
-      </h1> */}
-
       {/* Card */}
       <div className="relative z-10 w-full max-w-md rounded-xl bg-gray-900 bg-opacity-80 backdrop-blur-md p-10 shadow-xl">
         <h2 className="mb-8 text-3xl font-semibold text-white text-center">
@@ -38,10 +41,7 @@ export default function ProLoginPage() {
 
         <form onSubmit={onSubmit} className="space-y-6">
           <div>
-            <label
-              htmlFor="username"
-              className="block mb-2 text-sm font-medium text-gray-300"
-            >
+            <label htmlFor="username" className="block mb-2 text-sm font-medium text-gray-300">
               Username
             </label>
             <input
@@ -56,10 +56,7 @@ export default function ProLoginPage() {
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="block mb-2 text-sm font-medium text-gray-300"
-            >
+            <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-300">
               Password
             </label>
             <input
@@ -80,8 +77,6 @@ export default function ProLoginPage() {
             Log In
           </button>
         </form>
-
-       
       </div>
     </div>
   );

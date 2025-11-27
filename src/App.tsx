@@ -1,25 +1,28 @@
-import { useEffect, useState } from 'react'
-import { Button } from './components/ui/button'
+import { Routes, Route, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
-
-import { AccordionDemo } from './components/AccordionDemo'
-import { LoginForm } from './components/login-form'
-import DoctorCard from './components/Doctor-card-component'
-import { useNavigate } from 'react-router'
-
+// Tes pages
+import LoginPage from "@/pages/Login";
+import MainSelection from "@/pages/MainSelection"; // 
 
 function App() {
   const navigate = useNavigate();
-  useEffect(()=>{
-navigate("/login")
-  },[]);
+
+  useEffect(() => {
+    navigate("/login"); 
+  }, []);
 
   return (
-    <>
-    <h1>Home</h1>
-    
-    </>
-  )
+    <Routes>
+      {/* Page Login */}
+      <Route path="/login" element={<LoginPage />} />
+
+      {/* Ta page de sélection */}
+      <Route path="/select" element={<MainSelection />} />
+
+    </Routes>
+  );
 }
 
-export default App
+export default App;
+

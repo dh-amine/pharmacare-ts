@@ -18,6 +18,7 @@ import {
 
 import { Input } from "@/components/ui/input"
 import { useState } from 'react'
+import { useNavigate } from "react-router-dom"   // 👈 IMPORT IMPORTANT
 
 
 export function LoginForm({
@@ -25,13 +26,22 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">)  {
 
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-    const [email,setEmail]=useState("");
-    const [password,setPassword]=useState("");
+  const navigate = useNavigate();   // 👈 INITIALISATION
 
-    const onLogin=()=>{
-        alert(email);
+  const onLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 👉 Condition login
+    if ((email === "promotion1@care.tn" && password === "1234") || (email === "promotion2@care.tn" && password === "123")) {
+      // Redirection
+      navigate("/MainSelection");   // 👈 LA REDIRECTION
+    } else {
+      alert("Adress ou mot de passe incorrect.");
     }
+  };
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -43,9 +53,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form
-          onSubmit={onLogin}
-          >
+          <form onSubmit={onLogin}>
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -55,12 +63,10 @@ export function LoginForm({
                   placeholder="m@example.com"
                   required
                   value={email}
-                  onChange={(e)=>{
-                    setEmail(e.currentTarget.value);
-
-                  }}
+                  onChange={(e) => setEmail(e.currentTarget.value)}
                 />
               </Field>
+
               <Field>
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Password</FieldLabel>
@@ -71,18 +77,19 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required value={password} 
-                 onChange={(e)=>{
-                    setPassword(e.currentTarget.value);
-                  }}
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.currentTarget.value)}
                 />
               </Field>
+
               <Field>
-                <Button 
-               type="submit"
-                >Login</Button>
+                <Button type="submit">Login</Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                  Don't have an account? <a href="#">Sign up</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>
