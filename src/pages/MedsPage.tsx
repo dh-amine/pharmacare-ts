@@ -25,11 +25,16 @@ import { useNavigate } from "react-router";
 // ─────────────────────────────────────────────
 interface Doctor {
   id: string;
-  nom: string;
+  nom: string; 
+  demende: string;
+  montant: Number;
+  conjée: string;
   factureNum: string;
-  address: string;
+  op: string;
+  zone: string; 
   productRequested?: string;
   dateObtained?: string;
+  nomDelg: string ; 
 }
 
 // ─────────────────────────────────────────────
@@ -55,22 +60,37 @@ const MedsPage = () => {
 
   const [newDoctor, setNewDoctor] = useState({
     nom: "",
+    demende:"",
+    montant:0,
+    conjée: "",
     factureNum: "",
-    address: "",
-    numTlfn:"",
+    op:"",
+    zone:"",
+    productRequested:"",
+    dateObtained:"",
+    nomDelg:"",
   });
 
   function handleAddDoctor() {
     const doctor: Doctor = {
       id: crypto.randomUUID(),
       nom: newDoctor.nom,
-      factureNum: newDoctor.factureNum,
-      address: newDoctor.address,
+      demende : newDoctor.demende,
+      montant:newDoctor.montant,
+      conjée: newDoctor.conjée,
+      factureNum: newDoctor.factureNum ,
+      op:newDoctor.op,
+      zone:newDoctor.zone,
+      productRequested:newDoctor.productRequested,
+      dateObtained:newDoctor.dateObtained,
+      nomDelg:newDoctor.nomDelg,
+
+  
     };
 
     setDoctors([...doctors, doctor]);
     setAddModalOpen(false);
-    setNewDoctor({ nom: "", factureNum: "", address: "",numTlfn:"" });
+    setNewDoctor({ nom: "", demende: "", montant: 0 ,conjée:"" , factureNum:"" , op:"" , zone:"" , productRequested:"" , dateObtained:"" , nomDelg:"" });
   }
 
   // ─────────────────────────────────────────────
@@ -117,10 +137,16 @@ const MedsPage = () => {
 
   const columns = [
     { key: "nom", label: "Nom" },
+    { key: "demende", label: "Demende" },
+    { key: "montant", label: "Montant" },
+    { key: "conjée", label: "Conjée" },
     { key: "factureNum", label: "N° Facture" },
-    { key: "address", label: "Adresse" },
+    { key: "op", label: "OP" },
+    { key: "zone", label: "Zone" },
     { key: "productRequested", label: "Produit demandé" },
     { key: "dateObtained", label: "Date d'obtention" },
+    { key: "nomDelg", label: "Nom Delegue" },
+     
   ];
 
   return (
@@ -237,29 +263,77 @@ const MedsPage = () => {
             />
 
             <Input
-              placeholder="Numéro de facture"
+              placeholder="Demande"
+              className="bg-gray-700 text-gray-100 border-gray-600"
+              value={newDoctor.demende}
+              onChange={(e) =>
+                setNewDoctor({ ...newDoctor, demende: e.target.value })
+              }
+            />
+
+            <Input
+              placeholder="Montant"
+              className="bg-gray-700 text-gray-100 border-gray-600"
+              value={newDoctor.montant}
+              onChange={(e) =>
+                setNewDoctor({ ...newDoctor, montant: Number(e.target.value) })
+              }
+            />
+
+            <Input
+              placeholder="Conjée"
+              className="bg-gray-700 text-gray-100 border-gray-600"
+              value={newDoctor.conjée}
+              onChange={(e) =>
+                setNewDoctor({ ...newDoctor, conjée: e.target.value })
+              }
+            />
+            <Input
+              placeholder="Numero de facture"
               className="bg-gray-700 text-gray-100 border-gray-600"
               value={newDoctor.factureNum}
               onChange={(e) =>
                 setNewDoctor({ ...newDoctor, factureNum: e.target.value })
               }
             />
-
             <Input
-              placeholder="Numéro de telephone"
+              placeholder="OP"
               className="bg-gray-700 text-gray-100 border-gray-600"
-              value={newDoctor.numTlfn}
+              value={newDoctor.op}
               onChange={(e) =>
-                setNewDoctor({ ...newDoctor, numTlfn: e.target.value })
+                setNewDoctor({ ...newDoctor, op: e.target.value })
               }
             />
-
             <Input
-              placeholder="Adresse"
+              placeholder="Zone"
               className="bg-gray-700 text-gray-100 border-gray-600"
-              value={newDoctor.address}
+              value={newDoctor.zone}
               onChange={(e) =>
-                setNewDoctor({ ...newDoctor, address: e.target.value })
+                setNewDoctor({ ...newDoctor, zone: e.target.value })
+              }
+            />
+            <Input
+              placeholder="productRequested"
+              className="bg-gray-700 text-gray-100 border-gray-600"
+              value={newDoctor.productRequested}
+              onChange={(e) =>
+                setNewDoctor({ ...newDoctor, productRequested: e.target.value })
+              }
+            />
+            <Input
+              placeholder="dateObtaine"
+              className="bg-gray-700 text-gray-100 border-gray-600"
+              value={newDoctor.dateObtained}
+              onChange={(e) =>
+                setNewDoctor({ ...newDoctor, dateObtained: e.target.value })
+              }
+            />
+            <Input
+              placeholder="Nom de Delegue"
+              className="bg-gray-700 text-gray-100 border-gray-600"
+              value={newDoctor.nomDelg}
+              onChange={(e) =>
+                setNewDoctor({ ...newDoctor, nomDelg: e.target.value })
               }
             />
           </div>
@@ -290,22 +364,71 @@ const MedsPage = () => {
                   setEditData({ ...editData, nom: e.target.value })
                 }
               />
-
               <Input
                 className="bg-gray-700 text-gray-100 border-gray-600"
-                placeholder="Num de facture"
-                value={editData.factureNum}
+                placeholder="Demende"
+                value={editData.demende}
                 onChange={(e) =>
-                  setEditData({ ...editData, factureNum: e.target.value })
+                  setEditData({ ...editData, demende: e.target.value })
                 }
               />
 
               <Input
                 className="bg-gray-700 text-gray-100 border-gray-600"
-                placeholder="Adresse"
-                value={editData.address}
+                placeholder="Montant"
+                value={editData.montant?.toString() ?? ""}
+
                 onChange={(e) =>
-                  setEditData({ ...editData, address: e.target.value })
+                  setEditData({ ...editData, montant:Number(e.target.value) })
+                }
+              />
+              <Input
+                className="bg-gray-700 text-gray-100 border-gray-600"
+                placeholder="Conjée"
+                value={editData.conjée}
+                onChange={(e) =>
+                  setEditData({ ...editData, conjée: e.target.value })
+                }
+              />
+              <Input
+                className="bg-gray-700 text-gray-100 border-gray-600"
+                placeholder="Numero de Facture"
+                value={editData.factureNum}
+                onChange={(e) =>
+                  setEditData({ ...editData, factureNum: e.target.value })
+                }
+              />
+              <Input
+                className="bg-gray-700 text-gray-100 border-gray-600"
+                placeholder="OP"
+                value={editData.op}
+                onChange={(e) =>
+                  setEditData({ ...editData, op: e.target.value })
+                }
+              />
+              <Input
+                className="bg-gray-700 text-gray-100 border-gray-600"
+                placeholder="Zone"
+                value={editData.zone}
+                onChange={(e) =>
+                  setEditData({ ...editData, zone: e.target.value })
+                }
+              />
+              <Input
+                className="bg-gray-700 text-gray-100 border-gray-600"
+                placeholder="productRequested"
+                value={editData.productRequested}
+                onChange={(e) =>
+                  setEditData({ ...editData, productRequested: e.target.value })
+                }
+              />
+
+              <Input
+                className="bg-gray-700 text-gray-100 border-gray-600"
+                placeholder="Nom de Delegue"
+                value={editData.nomDelg}
+                onChange={(e) =>
+                  setEditData({ ...editData, nomDelg: e.target.value })
                 }
               />
             </div>

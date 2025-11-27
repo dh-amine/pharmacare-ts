@@ -13,7 +13,7 @@ export default function MainSelection() {
       <div className="flex flex-col md:flex-row gap-10">
         {/* MÉDECIN */}
         <ModeCard
-          title="Médecin"
+          title="BC"
           description="Accès au panneau médical et aux outils de gestion."
           image="https://images.pexels.com/photos/5407206/pexels-photo-5407206.jpeg"
           onClick={() => navigate("/medecines")}
@@ -21,7 +21,7 @@ export default function MainSelection() {
 
         {/* ACTIONNEUR */}
         <ModeCard
-          title="Actionneur"
+          title="Achat Materiél"
           description="Contrôle et automatisation des dispositifs."
           image="https://images.unsplash.com/photo-1593642532973-d31b6557fa68?auto=format&fit=crop&w=900&q=80"
           onClick={() => navigate("/actionneur")}
