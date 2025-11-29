@@ -17,28 +17,30 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
+import * as XLSX from "xlsx";
 
 // ─────────────────────────────────────────────
 // TYPES
 // ─────────────────────────────────────────────
 interface Doctor {
   id: string;
-  nom: string; 
-  demende: string;
-  montant: Number;
-  conjée: string;
+  nom: string;
+  demande: string;
+  montant: number;
+  congre: string;
   factureNum: string;
   op: string;
-  zone: string; 
+  zone: string;
   productRequested?: string;
   dateObtained?: string;
-  nomDelg: string ; 
+  nomDelg: string;
 }
 
 // ─────────────────────────────────────────────
-// MAIN PAGE
+// MAIN COMPONENT
 // ─────────────────────────────────────────────
 
 const MedsPage = () => {
@@ -47,56 +49,50 @@ const MedsPage = () => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [search, setSearch] = useState("");
 
-  // Modals
+  // MODALS
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [productModalOpen, setProductModalOpen] = useState(false);
 
   const [currentDoctor, setCurrentDoctor] = useState<Doctor | null>(null);
 
-  // ─────────────────────────────────────────────
   // ADD DOCTOR
-  // ─────────────────────────────────────────────
-
   const [newDoctor, setNewDoctor] = useState({
     nom: "",
-    demende:"",
-    montant:0,
-    conjée: "",
+    demande: "",
+    montant: 0,
+    congre: "",
     factureNum: "",
-    op:"",
-    zone:"",
-    productRequested:"",
-    dateObtained:"",
-    nomDelg:"",
+    op: "",
+    zone: "",
+    productRequested: "",
+    dateObtained: "",
+    nomDelg: "",
   });
 
   function handleAddDoctor() {
     const doctor: Doctor = {
       id: crypto.randomUUID(),
-      nom: newDoctor.nom,
-      demende : newDoctor.demende,
-      montant:newDoctor.montant,
-      conjée: newDoctor.conjée,
-      factureNum: newDoctor.factureNum ,
-      op:newDoctor.op,
-      zone:newDoctor.zone,
-      productRequested:newDoctor.productRequested,
-      dateObtained:newDoctor.dateObtained,
-      nomDelg:newDoctor.nomDelg,
-
-  
+      ...newDoctor,
     };
 
     setDoctors([...doctors, doctor]);
     setAddModalOpen(false);
-    setNewDoctor({ nom: "", demende: "", montant: 0 ,conjée:"" , factureNum:"" , op:"" , zone:"" , productRequested:"" , dateObtained:"" , nomDelg:"" });
+    setNewDoctor({
+      nom: "",
+      demande: "",
+      montant: 0,
+      congre: "",
+      factureNum: "",
+      op: "",
+      zone: "",
+      productRequested: "",
+      dateObtained: "",
+      nomDelg: "",
+    });
   }
 
-  // ─────────────────────────────────────────────
   // EDIT DOCTOR
-  // ─────────────────────────────────────────────
-
   const [editData, setEditData] = useState<Doctor | null>(null);
 
   useEffect(() => {
@@ -109,10 +105,7 @@ const MedsPage = () => {
     setEditModalOpen(false);
   }
 
-  // ─────────────────────────────────────────────
-  // ADD / EDIT PRODUCT
-  // ─────────────────────────────────────────────
-
+  // PRODUCT
   const [selectedDoctorId, setSelectedDoctorId] = useState("");
   const [productName, setProductName] = useState("");
   const [dateObtained, setDateObtained] = useState("");
@@ -128,73 +121,108 @@ const MedsPage = () => {
     setProductModalOpen(false);
   }
 
-  // ─────────────────────────────────────────────
-  // FILTER TABLE
-  // ─────────────────────────────────────────────
+  // FILTER
   const filteredDoctors = doctors.filter((d) =>
-    d.nom.toLowerCase().includes(search.toLowerCase())
+    d.demande.toLowerCase().includes(search.toLowerCase())
   );
 
   const columns = [
-    { key: "nom", label: "Nom" },
-    { key: "demende", label: "Demende" },
+    { key: "nom", label: "Nom de Médecin" },
+    { key: "demande", label: "N° Demande" },
     { key: "montant", label: "Montant" },
-    { key: "conjée", label: "Conjée" },
+    { key: "congre", label: "Congre" },
     { key: "factureNum", label: "N° Facture" },
     { key: "op", label: "OP" },
     { key: "zone", label: "Zone" },
     { key: "productRequested", label: "Produit demandé" },
     { key: "dateObtained", label: "Date d'obtention" },
-    { key: "nomDelg", label: "Nom Delegue" },
-     
+    { key: "nomDelg", label: "Nom Délégué" },
   ];
+
+  // ─────────────────────────────────────────────
+  // EXPORT EXCEL
+  // ─────────────────────────────────────────────
+
+  function handleExportExcel() {
+    if (doctors.length === 0) {
+      alert("Aucun médecin à exporter.");
+      return;
+    }
+
+    const sanitized = doctors.map((d) => ({
+      ID: d.id,
+      "Nom de Médecin": d.nom ?? "",
+      "N° Demande": d.demande ?? "",
+      Montant: Number(d.montant) || 0,
+      Congre: d.congre ?? "",
+      "N° Facture": d.factureNum ?? "",
+      OP: d.op ?? "",
+      Zone: d.zone ?? "",
+      "Produit demandé": d.productRequested ?? "",
+      "Date d'obtention": d.dateObtained ?? "",
+      "Nom Délégué": d.nomDelg ?? "",
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(sanitized);
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(wb, ws, "Médecins");
+
+    const filename = `medecins_${new Date()
+      .toISOString()
+      .slice(0, 10)}.xlsx`;
+
+    XLSX.writeFile(wb, filename);
+  }
+
+  // ─────────────────────────────────────────────
+  // RENDER
+  // ─────────────────────────────────────────────
 
   return (
     <div className="p-10 min-h-screen bg-gray-900 text-gray-100">
-     
-      <>
-    {/* Header with Back Button */}
-    <div className="flex items-center gap-4 mb-8">
-      <Button
-        variant="ghost"
-        className="text-gray-300 hover:text-white hover:bg-gray-800"
-        onClick={() => navigate(-1)}
-      >
-        <ArrowLeft className="mr-2 h-5 w-5" />
-        Retour
-      </Button>
+      {/* HEADER */}
+      <div className="flex items-center gap-4 mb-8">
+        <Button
+          variant="ghost"
+          className="text-gray-300 hover:text-white hover:bg-gray-800"
+          onClick={() => navigate(-1)}
+        >
+          <ArrowLeft className="mr-2 h-5 w-5" />
+          Retour
+        </Button>
 
-      <h1 className="text-4xl font-bold text-gray-100">
-        Gestion des Médecins
-      </h1>
-    </div>
+        <h1 className="text-4xl font-bold text-gray-100">
+          Gestion des Action
+        </h1>
+      </div>
 
-    {/* Controls */}
-    <div className="flex flex-wrap items-center gap-4 mb-6">
-      <Input
-        className="max-w-xs bg-gray-800 text-gray-100 border-gray-700"
-        placeholder="Rechercher un médecin..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      {/* CONTROLS */}
+      <div className="flex flex-wrap items-center gap-4 mb-6">
+        <Input
+          className="max-w-xs bg-gray-800 text-gray-100 border-gray-700"
+          placeholder="Rechercher Par N° de Demande..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
 
-      <Button onClick={() => setAddModalOpen(true)}>Ajouter un Médecin</Button>
+        <Button onClick={() => setAddModalOpen(true)}>Ajouter un Médecin</Button>
 
-      <Button variant="secondary" onClick={() => setProductModalOpen(true)}>
-        Ajouter un Produit
-      </Button>
-    </div>
-  </>
-      {/* Table */}
+        <Button variant="secondary" onClick={() => setProductModalOpen(true)}>
+          Ajouter un Produit
+        </Button>
+
+        {/* Export Excel — même design que Ajouter un Médecin */}
+        <Button onClick={handleExportExcel}>Exporter en Excel</Button>
+      </div>
+
+      {/* TABLE */}
       <div className="rounded-lg border border-gray-700 bg-gray-800">
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-700/50">
               {columns.map((c) => (
-                <TableHead
-                  key={c.key}
-                  className="text-gray-200 font-semibold"
-                >
+                <TableHead key={c.key} className="text-gray-200 font-semibold">
                   {c.label}
                 </TableHead>
               ))}
@@ -204,10 +232,7 @@ const MedsPage = () => {
 
           <TableBody>
             {filteredDoctors.map((doctor) => (
-              <TableRow
-                key={doctor.id}
-                className="hover:bg-gray-700 transition"
-              >
+              <TableRow key={doctor.id} className="hover:bg-gray-700 transition">
                 {columns.map((c) => (
                   <TableCell key={c.key} className="text-gray-300">
                     {(doctor as any)[c.key] || "—"}
@@ -242,10 +267,7 @@ const MedsPage = () => {
         </Table>
       </div>
 
-      {/* ───────────────────────────────────────────── */}
       {/* ADD DOCTOR MODAL */}
-      {/* ───────────────────────────────────────────── */}
-
       <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
         <DialogContent className="bg-gray-800 text-gray-100 border-gray-600">
           <DialogHeader>
@@ -265,9 +287,9 @@ const MedsPage = () => {
             <Input
               placeholder="Demande"
               className="bg-gray-700 text-gray-100 border-gray-600"
-              value={newDoctor.demende}
+              value={newDoctor.demande}
               onChange={(e) =>
-                setNewDoctor({ ...newDoctor, demende: e.target.value })
+                setNewDoctor({ ...newDoctor, demande: e.target.value })
               }
             />
 
@@ -276,26 +298,31 @@ const MedsPage = () => {
               className="bg-gray-700 text-gray-100 border-gray-600"
               value={newDoctor.montant}
               onChange={(e) =>
-                setNewDoctor({ ...newDoctor, montant: Number(e.target.value) })
+                setNewDoctor({
+                  ...newDoctor,
+                  montant: Number(e.target.value),
+                })
               }
             />
 
             <Input
-              placeholder="Conjée"
+              placeholder="Congre"
               className="bg-gray-700 text-gray-100 border-gray-600"
-              value={newDoctor.conjée}
+              value={newDoctor.congre}
               onChange={(e) =>
-                setNewDoctor({ ...newDoctor, conjée: e.target.value })
+                setNewDoctor({ ...newDoctor, congre: e.target.value })
               }
             />
+
             <Input
-              placeholder="Numero de facture"
+              placeholder="N° Facture"
               className="bg-gray-700 text-gray-100 border-gray-600"
               value={newDoctor.factureNum}
               onChange={(e) =>
                 setNewDoctor({ ...newDoctor, factureNum: e.target.value })
               }
             />
+
             <Input
               placeholder="OP"
               className="bg-gray-700 text-gray-100 border-gray-600"
@@ -304,6 +331,7 @@ const MedsPage = () => {
                 setNewDoctor({ ...newDoctor, op: e.target.value })
               }
             />
+
             <Input
               placeholder="Zone"
               className="bg-gray-700 text-gray-100 border-gray-600"
@@ -312,24 +340,33 @@ const MedsPage = () => {
                 setNewDoctor({ ...newDoctor, zone: e.target.value })
               }
             />
+
             <Input
-              placeholder="productRequested"
+              placeholder="Produit demandé"
               className="bg-gray-700 text-gray-100 border-gray-600"
               value={newDoctor.productRequested}
               onChange={(e) =>
-                setNewDoctor({ ...newDoctor, productRequested: e.target.value })
+                setNewDoctor({
+                  ...newDoctor,
+                  productRequested: e.target.value,
+                })
               }
             />
+
             <Input
-              placeholder="dateObtaine"
+              placeholder="Date obtention"
               className="bg-gray-700 text-gray-100 border-gray-600"
               value={newDoctor.dateObtained}
               onChange={(e) =>
-                setNewDoctor({ ...newDoctor, dateObtained: e.target.value })
+                setNewDoctor({
+                  ...newDoctor,
+                  dateObtained: e.target.value,
+                })
               }
             />
+
             <Input
-              placeholder="Nom de Delegue"
+              placeholder="Nom Délégué"
               className="bg-gray-700 text-gray-100 border-gray-600"
               value={newDoctor.nomDelg}
               onChange={(e) =>
@@ -344,10 +381,7 @@ const MedsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* ───────────────────────────────────────────── */}
       {/* EDIT DOCTOR MODAL */}
-      {/* ───────────────────────────────────────────── */}
-
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
         <DialogContent className="bg-gray-800 text-gray-100 border-gray-600">
           <DialogHeader>
@@ -358,74 +392,76 @@ const MedsPage = () => {
             <div className="space-y-4">
               <Input
                 className="bg-gray-700 text-gray-100 border-gray-600"
-                placeholder="Nom"
                 value={editData.nom}
                 onChange={(e) =>
                   setEditData({ ...editData, nom: e.target.value })
                 }
               />
+
               <Input
                 className="bg-gray-700 text-gray-100 border-gray-600"
-                placeholder="Demende"
-                value={editData.demende}
+                value={editData.demande}
                 onChange={(e) =>
-                  setEditData({ ...editData, demende: e.target.value })
+                  setEditData({ ...editData, demande: e.target.value })
                 }
               />
 
               <Input
                 className="bg-gray-700 text-gray-100 border-gray-600"
-                placeholder="Montant"
                 value={editData.montant?.toString() ?? ""}
+                onChange={(e) =>
+                  setEditData({
+                    ...editData,
+                    montant: Number(e.target.value),
+                  })
+                }
+              />
 
-                onChange={(e) =>
-                  setEditData({ ...editData, montant:Number(e.target.value) })
-                }
-              />
               <Input
                 className="bg-gray-700 text-gray-100 border-gray-600"
-                placeholder="Conjée"
-                value={editData.conjée}
+                value={editData.congre}
                 onChange={(e) =>
-                  setEditData({ ...editData, conjée: e.target.value })
+                  setEditData({ ...editData, congre: e.target.value })
                 }
               />
+
               <Input
                 className="bg-gray-700 text-gray-100 border-gray-600"
-                placeholder="Numero de Facture"
                 value={editData.factureNum}
                 onChange={(e) =>
                   setEditData({ ...editData, factureNum: e.target.value })
                 }
               />
+
               <Input
                 className="bg-gray-700 text-gray-100 border-gray-600"
-                placeholder="OP"
                 value={editData.op}
                 onChange={(e) =>
                   setEditData({ ...editData, op: e.target.value })
                 }
               />
+
               <Input
                 className="bg-gray-700 text-gray-100 border-gray-600"
-                placeholder="Zone"
                 value={editData.zone}
                 onChange={(e) =>
                   setEditData({ ...editData, zone: e.target.value })
                 }
               />
+
               <Input
                 className="bg-gray-700 text-gray-100 border-gray-600"
-                placeholder="productRequested"
                 value={editData.productRequested}
                 onChange={(e) =>
-                  setEditData({ ...editData, productRequested: e.target.value })
+                  setEditData({
+                    ...editData,
+                    productRequested: e.target.value,
+                  })
                 }
               />
 
               <Input
                 className="bg-gray-700 text-gray-100 border-gray-600"
-                placeholder="Nom de Delegue"
                 value={editData.nomDelg}
                 onChange={(e) =>
                   setEditData({ ...editData, nomDelg: e.target.value })
@@ -440,10 +476,7 @@ const MedsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* ───────────────────────────────────────────── */}
       {/* PRODUCT MODAL */}
-      {/* ───────────────────────────────────────────── */}
-
       <Dialog open={productModalOpen} onOpenChange={setProductModalOpen}>
         <DialogContent className="bg-gray-800 text-gray-100 border-gray-600">
           <DialogHeader>
