@@ -8,6 +8,7 @@ import MedsPage from './pages/MedsPage.tsx';
 import MainSelection from './pages/MainSelection.tsx';
 import ActionneurPage from './pages/ActionneurPage.tsx';
 import ProLoginPage from './pages/ProLoginPage.tsx';
+import MedDetailsPage from './pages/MedDetailsPage.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -17,6 +18,7 @@ createRoot(document.getElementById('root')!).render(
       <Route path="/login" element={<ProLoginPage />} />
       <Route path="/select" element={<MainSelection />} />
       <Route path="/medecines" element={<MedsPage />} />
+      <Route path="/medecines/:id" element={<MedDetailsPage />} />
       <Route path="/actionneur" element={<ActionneurPage />} />
     </Routes>
   </BrowserRouter>

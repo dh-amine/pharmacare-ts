@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, InfoIcon } from "lucide-react";
 import { useNavigate } from "react-router";
 import * as XLSX from "xlsx";
 
@@ -262,9 +262,15 @@ const MedsPage = () => {
           <TableHeader>
             <TableRow className="bg-gray-700/50">
               {columns.map((c) => (
-                <TableHead key={c.key}>{c.label}</TableHead>
+                <TableHead key={c.key}
+                className="text-white"
+                >{c.label}</TableHead>
               ))}
-              <TableHead>Actions</TableHead>
+              <TableHead
+              className="text-white"
+              >
+                Plus d'info 
+              </TableHead>
             </TableRow>
           </TableHeader>
 
@@ -280,7 +286,16 @@ const MedsPage = () => {
                 ))}
 
                 <TableCell className="flex gap-3">
-                  <Button
+                  <a
+                  href={`/medecines/${doctor.id}`}
+                  >
+
+                  <Button 
+                  >
+                    Plus d'info
+                  </Button>
+                  </a>
+                 {/*  <Button
                     size="sm"
                     onClick={() => {
                       setCurrentDoctor(doctor);
@@ -299,7 +314,7 @@ const MedsPage = () => {
                     }}
                   >
                     Produits
-                  </Button>
+                  </Button> */}
                 </TableCell>
               </TableRow>
             ))}
@@ -307,9 +322,11 @@ const MedsPage = () => {
         </Table>
       </div>
 
+
+
       {/* ADD MODAL */}
       <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
-        <DialogContent className="bg-gray-800 text-gray-100 border-gray-600">
+        <DialogContent className="bg-gray-800 text-gray-100 border-gray-600 max-h-4/5 overflow-scroll ">
           <DialogHeader>
             <DialogTitle>Ajouter une Action</DialogTitle>
           </DialogHeader>
