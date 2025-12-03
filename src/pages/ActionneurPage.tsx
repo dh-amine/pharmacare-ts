@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+
 import {
   Table,
   TableBody,
@@ -17,145 +18,287 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-interface Actionneur {
-  id: string;
-  nom: string;
-  role: string;
-  department: string;
-  shift: string;
-  status: "active" | "inactive";
-  tasks: string[]; // simple list of tasks/assignments
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router";
+import * as XLSX from "xlsx";
+
+// ---------------------------------------
+// FORMAT DATE (DD/MM/YYYY)
+// ---------------------------------------
+function formatDate(value: any) {
+  if (!value) return "—";
+
+  const date = value instanceof Date ? value : new Date(value);
+
+  return date.toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 }
 
-const ActionneurPage: React.FC = () => {
-  const [actionneurs, setActionneurs] = useState<Actionneur[]>([]);
+// ---------------------------------------
+// TYPES
+// ---------------------------------------
+interface Doctor {
+  id: string;
+  zone: string;
+  nomDelg: string;
+  gamme: string;
+  demandeDate: Date;
+  demendeNum: number;
+  prospect: string;
+  action: string;
+  manifestation: string;
+  agence: string;
+  factureNum: string;
+  cheqRm: string;
+  productRequested: string;
+  op: string;
+  dateObtained: Date;
+}
+
+// ---------------------------------------
+// MAIN COMPONENT
+// ---------------------------------------
+const MedsPage = () => {
+  const navigate = useNavigate();
+
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [search, setSearch] = useState("");
 
-  // Modals state
+  // MODALS
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [productModalOpen, setProductModalOpen] = useState(false);
 
-  const [current, setCurrent] = useState<Actionneur | null>(null);
+  const [currentDoctor, setCurrentDoctor] = useState<Doctor | null>(null);
 
-  // Form state for add / edit
-  const [formData, setFormData] = useState<Partial<Actionneur>>({
-    nom: "",
-    role: "",
-    department: "",
-    shift: "",
-    status: "active",
-    tasks: [],
+  // ADD DOCTOR
+  const [newDoctor, setNewDoctor] = useState<any>({
+    id: "",
+    zone: "",
+    nomDelg: "",
+    gamme: "",
+    demandeDate: "",
+    demendeNum: 0,
+    prospect: "",
+    action: "",
+    manifestation: "",
+    agence: "",
+    factureNum: "",
+    cheqRm: "",
+    productRequested: "",
+    op: "",
+    dateObtained: "",
   });
 
-  function resetForm() {
-    setFormData({
-      nom: "",
-      role: "",
-      department: "",
-      shift: "",
-      status: "active",
-      tasks: [],
+  function handleAddDoctor() {
+    const doctor: Doctor = {
+      ...newDoctor,
+      id: crypto.randomUUID(),
+      demandeDate: new Date(newDoctor.demandeDate),
+      dateObtained: newDoctor.dateObtained ? new Date(newDoctor.dateObtained) : null,
+    };
+
+    setDoctors([...doctors, doctor]);
+    setAddModalOpen(false);
+
+    setNewDoctor({
+      id: "",
+      zone: "",
+      nomDelg: "",
+      gamme: "",
+      demandeDate: "",
+      demendeNum: 0,
+      prospect: "",
+      action: "",
+      manifestation: "",
+      agence: "",
+      factureNum: "",
+      cheqRm: "",
+      productRequested: "",
+      op: "",
+      dateObtained: "",
     });
   }
 
-  function handleAdd() {
-    const newA: Actionneur = {
-      id: crypto.randomUUID(),
-      nom: formData.nom || "",
-      role: formData.role || "",
-      department: formData.department || "",
-      shift: formData.shift || "",
-      status: formData.status || "active",
-      tasks: formData.tasks || [],
-    };
-    setActionneurs((prev) => [...prev, newA]);
-    setAddModalOpen(false);
-    resetForm();
-  }
+  // EDIT DOCTOR
+  const [editData, setEditData] = useState<Doctor | null>(null);
 
-  function handleEditSave() {
-    if (!current) return;
-    setActionneurs((prev) =>
-      prev.map((a) => (a.id === current.id ? { ...current, ...formData } : a))
-    );
-    setEditModalOpen(false);
-    resetForm();
-  }
-
-  // For editing a particular actionneur
   useEffect(() => {
-    if (current) {
-      setFormData({
-        nom: current.nom,
-        role: current.role,
-        department: current.department,
-        shift: current.shift,
-        status: current.status,
-        tasks: current.tasks,
-      });
-    }
-  }, [current]);
+    if (currentDoctor) setEditData(currentDoctor);
+  }, [currentDoctor]);
 
-  // Filtering
-  const filtered = actionneurs.filter((a) =>
-    a.nom.toLowerCase().includes(search.toLowerCase())
+  function handleSaveEdit() {
+    if (!editData) return;
+
+    setDoctors(doctors.map((d) => (d.id === editData.id ? editData : d)));
+    setEditModalOpen(false);
+  }
+
+  // PRODUCT
+  const [selectedDoctorId, setSelectedDoctorId] = useState("");
+  const [productName, setProductName] = useState("");
+  const [dateObtained, setDateObtained] = useState("");
+
+  function handleSaveProduct() {
+    setDoctors(
+      doctors.map((d) =>
+        d.id === selectedDoctorId
+          ? {
+              ...d,
+              productRequested: productName,
+              dateObtained: new Date(dateObtained), // FIX TYPE
+            }
+          : d
+      )
+    );
+
+    setProductModalOpen(false);
+  }
+
+  // ---------------------------------------
+  // FILTER
+  // ---------------------------------------
+  const filteredDoctors = doctors.filter((d) =>
+    d.demendeNum.toString().includes(search)
   );
 
+  // ---------------------------------------
+  // TABLE COLUMNS
+  // ---------------------------------------
   const columns = [
-    { key: "nom", label: "Nom" },
-    { key: "role", label: "Rôle" },
-    { key: "department", label: "Département" },
-    { key: "shift", label: "Shift" },
-    { key: "status", label: "Statut" },
-    { key: "tasks", label: "Tâches assignées" },
+    { key: "zone", label: "Zone" },
+    { key: "nomDelg", label: "Nom Délégué" },
+    { key: "gamme", label: "Gamme" },
+    { key: "demandeDate", label: "Date de Demande" },
+    { key: "demendeNum", label: "N° de Date" },
+    { key: "prospect", label: "Prospect" },
+    { key: "action", label: "Action" },
+    { key: "manifestation", label: "Manifestation" },
+    { key: "agence", label: "Agence" },
+    { key: "factureNum", label: "N° de Facture" },
+    { key: "cheqRm", label: "Chèque/Reemborsement" },
+    { key: "productRequested", label: "Produit demandé" },
+    { key: "op", label: "OP" },
+    { key: "dateObtained", label: "Date d'obtention" },
   ];
 
-  return (
-    <div className="p-10 min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      <h1 className="text-4xl font-bold mb-8">Gestion des Actionneurs</h1>
+  // ---------------------------------------
+  // EXPORT EXCEL
+  // ---------------------------------------
+  function handleExportExcel() {
+    if (doctors.length === 0) {
+      alert("Aucun médecin à exporter.");
+      return;
+    }
 
+    const sanitized = doctors.map((d) => ({
+      Zone: d.zone,
+      "Nom Délégué": d.nomDelg,
+      Gamme: d.gamme,
+      "Date Demande": formatDate(d.demandeDate),
+      "N° de Date": d.demendeNum,
+      Prospect: d.prospect,
+      Action: d.action,
+      Manifestation: d.manifestation,
+      Agence: d.agence,
+      "N° Facture": d.factureNum,
+      "Chèque/Remborsement": d.cheqRm,
+      "Produit demandé": d.productRequested,
+      OP: d.op,
+      "Date d'obtention": formatDate(d.dateObtained),
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(sanitized);
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(wb, ws, "Actions");
+
+    XLSX.writeFile(wb, `actions_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  }
+
+  // ---------------------------------------
+  // RENDER
+  // ---------------------------------------
+  return (
+    <div className="p-10 min-h-screen bg-gray-900 text-gray-100">
+      {/* HEADER */}
+      <div className="flex items-center gap-4 mb-8">
+        <Button
+          variant="ghost"
+          className="text-gray-300 hover:text-white hover:bg-gray-800"
+          onClick={() => navigate(-1)}
+        >
+          <ArrowLeft className="mr-2 h-5 w-5" />
+          Retour
+        </Button>
+
+        <h1 className="text-4xl font-bold">Gestion des Achats</h1>
+      </div>
+
+      {/* CONTROLS */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
         <Input
-          className="max-w-xs"
-          placeholder="Rechercher un actionneur..."
+          className="max-w-xs bg-gray-800 text-gray-100 border-gray-700"
+          placeholder="Rechercher par N° de Date…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <Button onClick={() => { resetForm(); setAddModalOpen(true); }}>
-          Ajouter un Actionneur
+
+        <Button onClick={() => setAddModalOpen(true)}>Ajouter</Button>
+
+        <Button variant="secondary" onClick={() => setProductModalOpen(true)}>
+          Ajouter un Produit
         </Button>
+
+        <Button onClick={handleExportExcel}>Exporter Excel</Button>
       </div>
 
-      <div className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">
+      {/* TABLE */}
+      <div className="rounded-lg border border-gray-700 bg-gray-800">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-200 dark:bg-gray-700">
+            <TableRow className="bg-gray-700/50">
               {columns.map((c) => (
                 <TableHead key={c.key}>{c.label}</TableHead>
               ))}
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
+
           <TableBody>
-            {filtered.map((a) => (
-              <TableRow key={a.id} className="hover:bg-gray-100 dark:hover:bg-gray-700">
-                <TableCell>{a.nom}</TableCell>
-                <TableCell>{a.role}</TableCell>
-                <TableCell>{a.department}</TableCell>
-                <TableCell>{a.shift}</TableCell>
-                <TableCell>{a.status}</TableCell>
-                <TableCell>
-                  {a.tasks.length > 0 ? a.tasks.join(", ") : "—"}
-                </TableCell>
-                <TableCell className="flex gap-2">
+            {filteredDoctors.map((doctor) => (
+              <TableRow key={doctor.id}>
+                {columns.map((c) => (
+                  <TableCell key={c.key}>
+                    {c.key === "demandeDate" || c.key === "dateObtained"
+                      ? formatDate((doctor as any)[c.key])
+                      : (doctor as any)[c.key] || "—"}
+                  </TableCell>
+                ))}
+
+                <TableCell className="flex gap-3">
                   <Button
                     size="sm"
                     onClick={() => {
-                      setCurrent(a);
+                      setCurrentDoctor(doctor);
                       setEditModalOpen(true);
                     }}
                   >
                     Modifier
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      setSelectedDoctorId(doctor.id);
+                      setProductModalOpen(true);
+                    }}
+                  >
+                    Produits
                   </Button>
                 </TableCell>
               </TableRow>
@@ -164,122 +307,103 @@ const ActionneurPage: React.FC = () => {
         </Table>
       </div>
 
-      {/* Add Modal */}
+      {/* ADD MODAL */}
       <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
-        <DialogContent className="space-y-4">
+        <DialogContent className="bg-gray-800 text-gray-100 border-gray-600">
           <DialogHeader>
-            <DialogTitle>Ajouter un Actionneur</DialogTitle>
+            <DialogTitle>Ajouter une Action</DialogTitle>
           </DialogHeader>
 
-          <Input
-            placeholder="Nom"
-            value={formData.nom}
-            onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
-          />
-          <Input
-            placeholder="Rôle"
-            value={formData.role}
-            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-          />
-          <Input
-            placeholder="Département"
-            value={formData.department}
-            onChange={(e) =>
-              setFormData({ ...formData, department: e.target.value })
-            }
-          />
-          <Input
-            placeholder="Shift (ex: Matin / Soir)"
-            value={formData.shift}
-            onChange={(e) => setFormData({ ...formData, shift: e.target.value })}
-          />
-          <div className="flex items-center gap-2">
-            <label className="mr-2">Statut :</label>
-            <select
-              className="border rounded p-1"
-              value={formData.status}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  status: e.target.value as "active" | "inactive",
-                })
-              }
-            >
-              <option value="active">Actif</option>
-              <option value="inactive">Inactif</option>
-            </select>
+          <div className="space-y-3">
+            {Object.keys(newDoctor).map((key) =>
+              key !== "id" ? (
+                <Input
+                  key={key}
+                  placeholder={key}
+                  className="bg-gray-700 text-gray-100 border-gray-600"
+                  value={newDoctor[key]}
+                  onChange={(e) =>
+                    setNewDoctor({ ...newDoctor, [key]: e.target.value })
+                  }
+                />
+              ) : null
+            )}
           </div>
-          <Input
-            placeholder="Tâches (séparées par virgule)"
-            value={formData.tasks?.join(", ")}
-            onChange={(e) => {
-              const tasks = e.target.value.split(",").map((t) => t.trim());
-              setFormData({ ...formData, tasks });
-            }}
-          />
 
           <DialogFooter>
-            <Button onClick={handleAdd}>Ajouter</Button>
+            <Button onClick={handleAddDoctor}>Ajouter</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Edit Modal */}
+      {/* EDIT MODAL */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
-        <DialogContent className="space-y-4">
+        <DialogContent className="bg-gray-800 text-gray-100 border-gray-600">
           <DialogHeader>
-            <DialogTitle>Modifier Actionneur</DialogTitle>
+            <DialogTitle>Modifier</DialogTitle>
           </DialogHeader>
 
-          <Input
-            placeholder="Nom"
-            value={formData.nom}
-            onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
-          />
-          <Input
-            placeholder="Rôle"
-            value={formData.role}
-            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-          />
-          <Input
-            placeholder="Département"
-            value={formData.department}
-            onChange={(e) =>
-              setFormData({ ...formData, department: e.target.value })
-            }
-          />
-          <Input
-            placeholder="Shift"
-            value={formData.shift}
-            onChange={(e) => setFormData({ ...formData, shift: e.target.value })}
-          />
-          <div className="flex items-center gap-2">
-            <label>Statut :</label>
-            <select
-              className="border rounded p-1"
-              value={formData.status}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  status: e.target.value as "active" | "inactive",
-                })
-              }
-            >
-              <option value="active">Actif</option>
-              <option value="inactive">Inactif</option>
-            </select>
-          </div>
-          <Input
-            placeholder="Tâches (séparées par virgule)"
-            value={formData.tasks?.join(", ")}
-            onChange={(e) => {
-              const tasks = e.target.value.split(",").map((t) => t.trim());
-              setFormData({ ...formData, tasks });
-            }}
-          />
+          {editData && (
+            <div className="space-y-3">
+              {Object.keys(editData).map((key) =>
+                key !== "id" ? (
+                  <Input
+                    key={key}
+                    value={(editData as any)[key]}
+                    className="bg-gray-700 text-gray-100 border-gray-600"
+                    onChange={(e) =>
+                      setEditData({ ...editData, [key]: e.target.value })
+                    }
+                  />
+                ) : null
+              )}
+            </div>
+          )}
 
           <DialogFooter>
-            <Button onClick={handleEditSave}>Enregistrer</Button>
+            <Button onClick={handleSaveEdit}>Enregistrer</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* PRODUCT MODAL */}
+      <Dialog open={productModalOpen} onOpenChange={setProductModalOpen}>
+        <DialogContent className="bg-gray-800 text-gray-100 border-gray-600">
+          <DialogHeader>
+            <DialogTitle>Ajouter un Produit</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <select
+              className="w-full bg-gray-700 text-gray-100 p-2 border border-gray-600 rounded"
+              value={selectedDoctorId}
+              onChange={(e) => setSelectedDoctorId(e.target.value)}
+            >
+              <option value="">Sélectionner…</option>
+              {doctors.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.nomDelg} – {d.demendeNum}
+                </option>
+              ))}
+            </select>
+
+            <Input
+              placeholder="Nom produit"
+              className="bg-gray-700 text-gray-100 border-gray-600"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+            />
+
+            <Input
+              type="date"
+              className="bg-gray-700 text-gray-100 border-gray-600"
+              value={dateObtained}
+              onChange={(e) => setDateObtained(e.target.value)}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button onClick={handleSaveProduct}>Enregistrer</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -287,4 +411,4 @@ const ActionneurPage: React.FC = () => {
   );
 };
 
-export default ActionneurPage;
+export default MedsPage;

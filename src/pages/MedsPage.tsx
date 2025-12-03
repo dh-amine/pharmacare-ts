@@ -22,27 +22,45 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 import * as XLSX from "xlsx";
 
-// ─────────────────────────────────────────────
-// TYPES
-// ─────────────────────────────────────────────
-interface Doctor {
-  id: string;
-  nom: string;
-  demande: string;
-  montant: number;
-  congre: string;
-  factureNum: string;
-  op: string;
-  zone: string;
-  productRequested?: string;
-  dateObtained?: string;
-  nomDelg: string;
+// ---------------------------------------
+// FORMAT DATE (DD/MM/YYYY)
+// ---------------------------------------
+function formatDate(value: any) {
+  if (!value) return "—";
+
+  const date = value instanceof Date ? value : new Date(value);
+
+  return date.toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 }
 
-// ─────────────────────────────────────────────
-// MAIN COMPONENT
-// ─────────────────────────────────────────────
+// ---------------------------------------
+// TYPES
+// ---------------------------------------
+interface Doctor {
+  id: string;
+  zone: string;
+  nomDelg: string;
+  gamme: string;
+  demandeDate: Date;
+  demendeNum: number;
+  prospect: string;
+  action: string;
+  manifestation: string;
+  agence: string;
+  factureNum: string;
+  cheqRm: string;
+  productRequested: string;
+  op: string;
+  dateObtained: Date;
+}
 
+// ---------------------------------------
+// MAIN COMPONENT
+// ---------------------------------------
 const MedsPage = () => {
   const navigate = useNavigate();
 
@@ -57,38 +75,51 @@ const MedsPage = () => {
   const [currentDoctor, setCurrentDoctor] = useState<Doctor | null>(null);
 
   // ADD DOCTOR
-  const [newDoctor, setNewDoctor] = useState({
-    nom: "",
-    demande: "",
-    montant: 0,
-    congre: "",
-    factureNum: "",
-    op: "",
+  const [newDoctor, setNewDoctor] = useState<any>({
+    id: "",
     zone: "",
-    productRequested: "",
-    dateObtained: "",
     nomDelg: "",
+    gamme: "",
+    demandeDate: "",
+    demendeNum: 0,
+    prospect: "",
+    action: "",
+    manifestation: "",
+    agence: "",
+    factureNum: "",
+    cheqRm: "",
+    productRequested: "",
+    op: "",
+    dateObtained: "",
   });
 
   function handleAddDoctor() {
     const doctor: Doctor = {
-      id: crypto.randomUUID(),
       ...newDoctor,
+      id: crypto.randomUUID(),
+      demandeDate: new Date(newDoctor.demandeDate),
+      dateObtained: newDoctor.dateObtained ? new Date(newDoctor.dateObtained) : null,
     };
 
     setDoctors([...doctors, doctor]);
     setAddModalOpen(false);
+
     setNewDoctor({
-      nom: "",
-      demande: "",
-      montant: 0,
-      congre: "",
-      factureNum: "",
-      op: "",
+      id: "",
       zone: "",
-      productRequested: "",
-      dateObtained: "",
       nomDelg: "",
+      gamme: "",
+      demandeDate: "",
+      demendeNum: 0,
+      prospect: "",
+      action: "",
+      manifestation: "",
+      agence: "",
+      factureNum: "",
+      cheqRm: "",
+      productRequested: "",
+      op: "",
+      dateObtained: "",
     });
   }
 
@@ -101,6 +132,7 @@ const MedsPage = () => {
 
   function handleSaveEdit() {
     if (!editData) return;
+
     setDoctors(doctors.map((d) => (d.id === editData.id ? editData : d)));
     setEditModalOpen(false);
   }
@@ -114,35 +146,48 @@ const MedsPage = () => {
     setDoctors(
       doctors.map((d) =>
         d.id === selectedDoctorId
-          ? { ...d, productRequested: productName, dateObtained }
+          ? {
+              ...d,
+              productRequested: productName,
+              dateObtained: new Date(dateObtained), // FIX TYPE
+            }
           : d
       )
     );
+
     setProductModalOpen(false);
   }
 
+  // ---------------------------------------
   // FILTER
+  // ---------------------------------------
   const filteredDoctors = doctors.filter((d) =>
-    d.demande.toLowerCase().includes(search.toLowerCase())
+    d.demendeNum.toString().includes(search)
   );
 
+  // ---------------------------------------
+  // TABLE COLUMNS
+  // ---------------------------------------
   const columns = [
-    { key: "nom", label: "Nom de Médecin" },
-    { key: "demande", label: "N° Demande" },
-    { key: "montant", label: "Montant" },
-    { key: "congre", label: "Congre" },
-    { key: "factureNum", label: "N° Facture" },
-    { key: "op", label: "OP" },
     { key: "zone", label: "Zone" },
-    { key: "productRequested", label: "Produit demandé" },
-    { key: "dateObtained", label: "Date d'obtention" },
     { key: "nomDelg", label: "Nom Délégué" },
+    { key: "gamme", label: "Gamme" },
+    { key: "demandeDate", label: "Date de Demande" },
+    { key: "demendeNum", label: "N° de Date" },
+    { key: "prospect", label: "Prospect" },
+    { key: "action", label: "Action" },
+    { key: "manifestation", label: "Manifestation" },
+    { key: "agence", label: "Agence" },
+    { key: "factureNum", label: "N° de Facture" },
+    { key: "cheqRm", label: "Chèque/Reemborsement" },
+    { key: "productRequested", label: "Produit demandé" },
+    { key: "op", label: "OP" },
+    { key: "dateObtained", label: "Date d'obtention" },
   ];
 
-  // ─────────────────────────────────────────────
+  // ---------------------------------------
   // EXPORT EXCEL
-  // ─────────────────────────────────────────────
-
+  // ---------------------------------------
   function handleExportExcel() {
     if (doctors.length === 0) {
       alert("Aucun médecin à exporter.");
@@ -150,35 +195,33 @@ const MedsPage = () => {
     }
 
     const sanitized = doctors.map((d) => ({
-      ID: d.id,
-      "Nom de Médecin": d.nom ?? "",
-      "N° Demande": d.demande ?? "",
-      Montant: Number(d.montant) || 0,
-      Congre: d.congre ?? "",
-      "N° Facture": d.factureNum ?? "",
-      OP: d.op ?? "",
-      Zone: d.zone ?? "",
-      "Produit demandé": d.productRequested ?? "",
-      "Date d'obtention": d.dateObtained ?? "",
-      "Nom Délégué": d.nomDelg ?? "",
+      Zone: d.zone,
+      "Nom Délégué": d.nomDelg,
+      Gamme: d.gamme,
+      "Date Demande": formatDate(d.demandeDate),
+      "N° de Date": d.demendeNum,
+      Prospect: d.prospect,
+      Action: d.action,
+      Manifestation: d.manifestation,
+      Agence: d.agence,
+      "N° Facture": d.factureNum,
+      "Chèque/Remborsement": d.cheqRm,
+      "Produit demandé": d.productRequested,
+      OP: d.op,
+      "Date d'obtention": formatDate(d.dateObtained),
     }));
 
     const ws = XLSX.utils.json_to_sheet(sanitized);
     const wb = XLSX.utils.book_new();
 
-    XLSX.utils.book_append_sheet(wb, ws, "Médecins");
+    XLSX.utils.book_append_sheet(wb, ws, "Actions");
 
-    const filename = `medecins_${new Date()
-      .toISOString()
-      .slice(0, 10)}.xlsx`;
-
-    XLSX.writeFile(wb, filename);
+    XLSX.writeFile(wb, `actions_${new Date().toISOString().slice(0, 10)}.xlsx`);
   }
 
-  // ─────────────────────────────────────────────
+  // ---------------------------------------
   // RENDER
-  // ─────────────────────────────────────────────
-
+  // ---------------------------------------
   return (
     <div className="p-10 min-h-screen bg-gray-900 text-gray-100">
       {/* HEADER */}
@@ -192,28 +235,25 @@ const MedsPage = () => {
           Retour
         </Button>
 
-        <h1 className="text-4xl font-bold text-gray-100">
-          Gestion des Action
-        </h1>
+        <h1 className="text-4xl font-bold">Gestion des Actions</h1>
       </div>
 
       {/* CONTROLS */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
         <Input
           className="max-w-xs bg-gray-800 text-gray-100 border-gray-700"
-          placeholder="Rechercher Par N° de Demande..."
+          placeholder="Rechercher par N° de Date…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <Button onClick={() => setAddModalOpen(true)}>Ajouter un Médecin</Button>
+        <Button onClick={() => setAddModalOpen(true)}>Ajouter</Button>
 
         <Button variant="secondary" onClick={() => setProductModalOpen(true)}>
           Ajouter un Produit
         </Button>
 
-        {/* Export Excel — même design que Ajouter un Médecin */}
-        <Button onClick={handleExportExcel}>Exporter en Excel</Button>
+        <Button onClick={handleExportExcel}>Exporter Excel</Button>
       </div>
 
       {/* TABLE */}
@@ -222,24 +262,24 @@ const MedsPage = () => {
           <TableHeader>
             <TableRow className="bg-gray-700/50">
               {columns.map((c) => (
-                <TableHead key={c.key} className="text-gray-200 font-semibold">
-                  {c.label}
-                </TableHead>
+                <TableHead key={c.key}>{c.label}</TableHead>
               ))}
-              <TableHead className="text-gray-200">Actions</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {filteredDoctors.map((doctor) => (
-              <TableRow key={doctor.id} className="hover:bg-gray-700 transition">
+              <TableRow key={doctor.id}>
                 {columns.map((c) => (
-                  <TableCell key={c.key} className="text-gray-300">
-                    {(doctor as any)[c.key] || "—"}
+                  <TableCell key={c.key}>
+                    {c.key === "demandeDate" || c.key === "dateObtained"
+                      ? formatDate((doctor as any)[c.key])
+                      : (doctor as any)[c.key] || "—"}
                   </TableCell>
                 ))}
 
-                <TableCell className="flex gap-3 py-4">
+                <TableCell className="flex gap-3">
                   <Button
                     size="sm"
                     onClick={() => {
@@ -267,112 +307,27 @@ const MedsPage = () => {
         </Table>
       </div>
 
-      {/* ADD DOCTOR MODAL */}
+      {/* ADD MODAL */}
       <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
         <DialogContent className="bg-gray-800 text-gray-100 border-gray-600">
           <DialogHeader>
-            <DialogTitle>Ajouter un Médecin</DialogTitle>
+            <DialogTitle>Ajouter une Action</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <Input
-              placeholder="Nom"
-              className="bg-gray-700 text-gray-100 border-gray-600"
-              value={newDoctor.nom}
-              onChange={(e) =>
-                setNewDoctor({ ...newDoctor, nom: e.target.value })
-              }
-            />
-
-            <Input
-              placeholder="Demande"
-              className="bg-gray-700 text-gray-100 border-gray-600"
-              value={newDoctor.demande}
-              onChange={(e) =>
-                setNewDoctor({ ...newDoctor, demande: e.target.value })
-              }
-            />
-
-            <Input
-              placeholder="Montant"
-              className="bg-gray-700 text-gray-100 border-gray-600"
-              value={newDoctor.montant}
-              onChange={(e) =>
-                setNewDoctor({
-                  ...newDoctor,
-                  montant: Number(e.target.value),
-                })
-              }
-            />
-
-            <Input
-              placeholder="Congre"
-              className="bg-gray-700 text-gray-100 border-gray-600"
-              value={newDoctor.congre}
-              onChange={(e) =>
-                setNewDoctor({ ...newDoctor, congre: e.target.value })
-              }
-            />
-
-            <Input
-              placeholder="N° Facture"
-              className="bg-gray-700 text-gray-100 border-gray-600"
-              value={newDoctor.factureNum}
-              onChange={(e) =>
-                setNewDoctor({ ...newDoctor, factureNum: e.target.value })
-              }
-            />
-
-            <Input
-              placeholder="OP"
-              className="bg-gray-700 text-gray-100 border-gray-600"
-              value={newDoctor.op}
-              onChange={(e) =>
-                setNewDoctor({ ...newDoctor, op: e.target.value })
-              }
-            />
-
-            <Input
-              placeholder="Zone"
-              className="bg-gray-700 text-gray-100 border-gray-600"
-              value={newDoctor.zone}
-              onChange={(e) =>
-                setNewDoctor({ ...newDoctor, zone: e.target.value })
-              }
-            />
-
-            <Input
-              placeholder="Produit demandé"
-              className="bg-gray-700 text-gray-100 border-gray-600"
-              value={newDoctor.productRequested}
-              onChange={(e) =>
-                setNewDoctor({
-                  ...newDoctor,
-                  productRequested: e.target.value,
-                })
-              }
-            />
-
-            <Input
-              placeholder="Date obtention"
-              className="bg-gray-700 text-gray-100 border-gray-600"
-              value={newDoctor.dateObtained}
-              onChange={(e) =>
-                setNewDoctor({
-                  ...newDoctor,
-                  dateObtained: e.target.value,
-                })
-              }
-            />
-
-            <Input
-              placeholder="Nom Délégué"
-              className="bg-gray-700 text-gray-100 border-gray-600"
-              value={newDoctor.nomDelg}
-              onChange={(e) =>
-                setNewDoctor({ ...newDoctor, nomDelg: e.target.value })
-              }
-            />
+          <div className="space-y-3">
+            {Object.keys(newDoctor).map((key) =>
+              key !== "id" ? (
+                <Input
+                  key={key}
+                  placeholder={key}
+                  className="bg-gray-700 text-gray-100 border-gray-600"
+                  value={newDoctor[key]}
+                  onChange={(e) =>
+                    setNewDoctor({ ...newDoctor, [key]: e.target.value })
+                  }
+                />
+              ) : null
+            )}
           </div>
 
           <DialogFooter>
@@ -381,92 +336,27 @@ const MedsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* EDIT DOCTOR MODAL */}
+      {/* EDIT MODAL */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
         <DialogContent className="bg-gray-800 text-gray-100 border-gray-600">
           <DialogHeader>
-            <DialogTitle>Modifier Médecin</DialogTitle>
+            <DialogTitle>Modifier</DialogTitle>
           </DialogHeader>
 
           {editData && (
-            <div className="space-y-4">
-              <Input
-                className="bg-gray-700 text-gray-100 border-gray-600"
-                value={editData.nom}
-                onChange={(e) =>
-                  setEditData({ ...editData, nom: e.target.value })
-                }
-              />
-
-              <Input
-                className="bg-gray-700 text-gray-100 border-gray-600"
-                value={editData.demande}
-                onChange={(e) =>
-                  setEditData({ ...editData, demande: e.target.value })
-                }
-              />
-
-              <Input
-                className="bg-gray-700 text-gray-100 border-gray-600"
-                value={editData.montant?.toString() ?? ""}
-                onChange={(e) =>
-                  setEditData({
-                    ...editData,
-                    montant: Number(e.target.value),
-                  })
-                }
-              />
-
-              <Input
-                className="bg-gray-700 text-gray-100 border-gray-600"
-                value={editData.congre}
-                onChange={(e) =>
-                  setEditData({ ...editData, congre: e.target.value })
-                }
-              />
-
-              <Input
-                className="bg-gray-700 text-gray-100 border-gray-600"
-                value={editData.factureNum}
-                onChange={(e) =>
-                  setEditData({ ...editData, factureNum: e.target.value })
-                }
-              />
-
-              <Input
-                className="bg-gray-700 text-gray-100 border-gray-600"
-                value={editData.op}
-                onChange={(e) =>
-                  setEditData({ ...editData, op: e.target.value })
-                }
-              />
-
-              <Input
-                className="bg-gray-700 text-gray-100 border-gray-600"
-                value={editData.zone}
-                onChange={(e) =>
-                  setEditData({ ...editData, zone: e.target.value })
-                }
-              />
-
-              <Input
-                className="bg-gray-700 text-gray-100 border-gray-600"
-                value={editData.productRequested}
-                onChange={(e) =>
-                  setEditData({
-                    ...editData,
-                    productRequested: e.target.value,
-                  })
-                }
-              />
-
-              <Input
-                className="bg-gray-700 text-gray-100 border-gray-600"
-                value={editData.nomDelg}
-                onChange={(e) =>
-                  setEditData({ ...editData, nomDelg: e.target.value })
-                }
-              />
+            <div className="space-y-3">
+              {Object.keys(editData).map((key) =>
+                key !== "id" ? (
+                  <Input
+                    key={key}
+                    value={(editData as any)[key]}
+                    className="bg-gray-700 text-gray-100 border-gray-600"
+                    onChange={(e) =>
+                      setEditData({ ...editData, [key]: e.target.value })
+                    }
+                  />
+                ) : null
+              )}
             </div>
           )}
 
@@ -485,20 +375,20 @@ const MedsPage = () => {
 
           <div className="space-y-4">
             <select
-              className="w-full bg-gray-700 text-gray-100 p-2 rounded-md border border-gray-600"
+              className="w-full bg-gray-700 text-gray-100 p-2 border border-gray-600 rounded"
               value={selectedDoctorId}
               onChange={(e) => setSelectedDoctorId(e.target.value)}
             >
-              <option value="">Sélectionner un médecin</option>
+              <option value="">Sélectionner…</option>
               {doctors.map((d) => (
                 <option key={d.id} value={d.id}>
-                  {d.nom}
+                  {d.nomDelg} – {d.demendeNum}
                 </option>
               ))}
             </select>
 
             <Input
-              placeholder="Nom du produit"
+              placeholder="Nom produit"
               className="bg-gray-700 text-gray-100 border-gray-600"
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
