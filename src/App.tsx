@@ -4,7 +4,7 @@ import { useEffect } from "react";
 // Tes pages
 import LoginPage from "@/pages/Login";
 import MainSelection from "@/pages/MainSelection"; // 
-
+import MedDetailsPage from "@/pages/MedDetailsPage";
 function App() {
   const navigate = useNavigate();
 
@@ -19,8 +19,12 @@ function App() {
 
       {/* Ta page de sélection */}
       <Route path="/select" element={<MainSelection />} />
-
+      
+      <Route path="/medecines/:id" element={<MedDetailsPage />} />
     </Routes>
+
+
+
   );
 }
 

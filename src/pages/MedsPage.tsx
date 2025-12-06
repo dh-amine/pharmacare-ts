@@ -53,7 +53,6 @@ interface Doctor {
   agence: string;
   factureNum: string;
   cheqRm: string;
-  productRequested: string;
   op: string;
   dateObtained: Date;
 }
@@ -88,7 +87,6 @@ const MedsPage = () => {
     agence: "",
     factureNum: "",
     cheqRm: "",
-    productRequested: "",
     op: "",
     dateObtained: "",
   });
@@ -117,7 +115,6 @@ const MedsPage = () => {
       agence: "",
       factureNum: "",
       cheqRm: "",
-      productRequested: "",
       op: "",
       dateObtained: "",
     });
@@ -179,8 +176,7 @@ const MedsPage = () => {
     { key: "manifestation", label: "Manifestation" },
     { key: "agence", label: "Agence" },
     { key: "factureNum", label: "N° de Facture" },
-    { key: "cheqRm", label: "Chèque/Reemborsement" },
-    { key: "productRequested", label: "Produit demandé" },
+    { key: "cheqRm", label: "Chèque/Remborsement" },
     { key: "op", label: "OP" },
     { key: "dateObtained", label: "Date d'obtention" },
   ];
@@ -206,7 +202,6 @@ const MedsPage = () => {
       Agence: d.agence,
       "N° Facture": d.factureNum,
       "Chèque/Remborsement": d.cheqRm,
-      "Produit demandé": d.productRequested,
       OP: d.op,
       "Date d'obtention": formatDate(d.dateObtained),
     }));
@@ -247,13 +242,11 @@ const MedsPage = () => {
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <Button onClick={() => setAddModalOpen(true)}>Ajouter</Button>
+        <Button onClick={() => setAddModalOpen(true)}className="bg-blue-600 text-white">Ajouter</Button>
 
-        <Button variant="secondary" onClick={() => setProductModalOpen(true)}>
-          Ajouter un Produit
-        </Button>
+        
 
-        <Button onClick={handleExportExcel}>Exporter Excel</Button>
+        <Button onClick={handleExportExcel}className="bg-blue-600 text-white">Exporter Excel</Button>
       </div>
 
       {/* TABLE */}
@@ -286,15 +279,14 @@ const MedsPage = () => {
                 ))}
 
                 <TableCell className="flex gap-3">
-                  <a
-                  href={`/medecines/${doctor.id}`}
-                  >
-
-                  <Button 
-                  >
+                  <Button
+                    onClick={() =>
+                      navigate(`/medecines/${doctor.id}`, { state: { doctor } })
+                     }
+                 >
                     Plus d'info
                   </Button>
-                  </a>
+
                  {/*  <Button
                     size="sm"
                     onClick={() => {
@@ -383,47 +375,8 @@ const MedsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* PRODUCT MODAL */}
-      <Dialog open={productModalOpen} onOpenChange={setProductModalOpen}>
-        <DialogContent className="bg-gray-800 text-gray-100 border-gray-600">
-          <DialogHeader>
-            <DialogTitle>Ajouter un Produit</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <select
-              className="w-full bg-gray-700 text-gray-100 p-2 border border-gray-600 rounded"
-              value={selectedDoctorId}
-              onChange={(e) => setSelectedDoctorId(e.target.value)}
-            >
-              <option value="">Sélectionner…</option>
-              {doctors.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.nomDelg} – {d.demendeNum}
-                </option>
-              ))}
-            </select>
-
-            <Input
-              placeholder="Nom produit"
-              className="bg-gray-700 text-gray-100 border-gray-600"
-              value={productName}
-              onChange={(e) => setProductName(e.target.value)}
-            />
-
-            <Input
-              type="date"
-              className="bg-gray-700 text-gray-100 border-gray-600"
-              value={dateObtained}
-              onChange={(e) => setDateObtained(e.target.value)}
-            />
-          </div>
-
-          <DialogFooter>
-            <Button onClick={handleSaveProduct}>Enregistrer</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      
+      
     </div>
   );
 };
