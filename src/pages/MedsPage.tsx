@@ -21,6 +21,16 @@ import {
 import { ArrowLeft, InfoIcon } from "lucide-react";
 import { useNavigate } from "react-router";
 import * as XLSX from "xlsx";
+import { Doctor } from "@/api/doctor";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // ---------------------------------------
 // FORMAT DATE (DD/MM/YYYY)
@@ -40,7 +50,7 @@ function formatDate(value: any) {
 // ---------------------------------------
 // TYPES
 // ---------------------------------------
-interface Doctor {
+interface DoctorI {
   id: string;
   zone: string;
   nomDelg: string;
@@ -95,8 +105,9 @@ const MedsPage = () => {
     const doctor: Doctor = {
       ...newDoctor,
       id: crypto.randomUUID(),
-      demandeDate: new Date(newDoctor.demandeDate),
-      dateObtained: newDoctor.dateObtained ? new Date(newDoctor.dateObtained) : null,
+      demandeDate: new Date(),
+   //   dateObtained: newDoctor.dateObtained ? new Date(newDoctor.dateObtained) : null,
+      dateObtained:new Date(),
     };
 
     setDoctors([...doctors, doctor]);
@@ -267,7 +278,7 @@ const MedsPage = () => {
             </TableRow>
           </TableHeader>
 
-          <TableBody>
+         {/*  <TableBody>
             {filteredDoctors.map((doctor) => (
               <TableRow key={doctor.id}>
                 {columns.map((c) => (
@@ -287,7 +298,7 @@ const MedsPage = () => {
                     Plus d'info
                   </Button>
 
-                 {/*  <Button
+                  <Button
                     size="sm"
                     onClick={() => {
                       setCurrentDoctor(doctor);
@@ -306,11 +317,37 @@ const MedsPage = () => {
                     }}
                   >
                     Produits
-                  </Button> */}
+                  </Button> 
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
+ */}
+
+           <TableBody>
+            {Doctor.generateDummy().map((doctor) => (
+              <TableRow key={doctor.id}>
+                {columns.map((c) => (
+                  <TableCell key={c.key}>
+                    {c.key === "demandeDate" || c.key === "dateObtained"
+                      ? formatDate((doctor as any)[c.key])
+                      : (doctor as any)[c.key] || "—"}
+                  </TableCell>
+                ))}
+
+                <TableCell className="flex gap-3">
+                  <Button
+                    onClick={() =>
+                      navigate(`/medecines/${doctor.id}`)
+                     }
+                 >
+                    Plus d'info
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+ 
         </Table>
       </div>
 
@@ -324,10 +361,23 @@ const MedsPage = () => {
           </DialogHeader>
 
           <div className="space-y-3">
+
+          
+            <Input
+                  key={"zone"}
+                  type={"text"}
+                  placeholder={"Zone"}
+                  className="bg-gray-700 text-gray-100 border-gray-600"
+                  value={newDoctor["zone"]}
+                  onChange={(e) =>
+                    setNewDoctor({ ...newDoctor, ["zone"]: e.target.value })
+                  }
+                />
             {Object.keys(newDoctor).map((key) =>
               key !== "id" ? (
                 <Input
                   key={key}
+                  type={key=="demandeDate"?"date":"text"}
                   placeholder={key}
                   className="bg-gray-700 text-gray-100 border-gray-600"
                   value={newDoctor[key]}

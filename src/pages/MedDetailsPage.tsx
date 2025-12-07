@@ -9,8 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-interface DoctorDetail {
+import { Doctor } from "@/api/doctor";
+import dayjs from "dayjs";
+/* interface DoctorDetail {
   id: string;
   zone: string;
   nomDelg: string;
@@ -18,7 +19,7 @@ interface DoctorDetail {
   demandeDate: string;
   demendeNum: number;
   prospect: string;
-}
+} */
 
 interface Product {
   id: number;
@@ -28,13 +29,14 @@ interface Product {
 
 const MedDetailsPage = () => {
   const { id } = useParams();
-  const location = useLocation();
-  const doctorFromState = location.state?.doctor as DoctorDetail;
-
   // On met les infos du doctor dans un tableau
-  const [doctorDetails, setDoctorDetails] = useState<DoctorDetail[]>(
-    doctorFromState ? [doctorFromState] : []
-  );
+  const [doctorDetails, setDoctorDetails] = useState<Doctor>();
+  useEffect(()=>{
+    if(id){
+      setDoctorDetails(Doctor.getById(id as string))
+      
+    }
+  },[id])
 
   const [products, setProducts] = useState<Product[]>([]);
   const [newProduct, setNewProduct] = useState<Omit<Product, "id">>({
@@ -48,12 +50,22 @@ const MedDetailsPage = () => {
     setNewProduct({ name: "", quantity: 0 });
   };
 
+
+  if(!doctorDetails){
+    return <>
+     <div className="p-6 bg-gray-900 min-h-screen text-white space-y-8">
+       <h1 className="text-2xl font-bold mb-4"></h1>
+     </div>
+    </>
+  }
   return (
     <div className="p-6 bg-gray-900 min-h-screen text-white space-y-8">
       <h1 className="text-2xl font-bold mb-4">Détails du Bon de commande - ID : {id}</h1>
 
       {/* Tableau des informations du médecin */}
-      <div className="rounded-lg border border-gray-700 bg-gray-800 overflow-x-auto">
+      {
+        doctorDetails && <>
+        <div className="rounded-lg border border-gray-700 bg-gray-800 overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-700/50">
@@ -66,19 +78,23 @@ const MedDetailsPage = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {doctorDetails.map((doc) => (
-              <TableRow key={doc.id}>
-                <TableCell>{doc.zone}</TableCell>
-                <TableCell>{doc.nomDelg}</TableCell>
-                <TableCell>{doc.gamme}</TableCell>
-                <TableCell>{doc.demandeDate}</TableCell>
-                <TableCell>{doc.demendeNum}</TableCell>
-                <TableCell>{doc.prospect}</TableCell>
+           
+              <TableRow key={doctorDetails.id}>
+                <TableCell>{doctorDetails.zone}</TableCell>
+                <TableCell>{doctorDetails.nomDelg}</TableCell>
+                <TableCell>{doctorDetails.gamme}</TableCell>
+                <TableCell>{dayjs(doctorDetails.demandeDate).format("YYYY/MM/DD")}</TableCell>
+                <TableCell>{doctorDetails.demendeNum}</TableCell>
+                <TableCell>{doctorDetails.prospect}</TableCell>
               </TableRow>
-            ))}
+          
           </TableBody>
         </Table>
       </div>
+        
+        </>
+      }
+      
 
       {/* Ajouter un produit */}
       <div className="space-y-4">
@@ -107,7 +123,7 @@ const MedDetailsPage = () => {
               className="p-2 rounded bg-gray-700 text-white w-full"
             />
           </div>
-          <Button onClick={addProduct} className="bg-blue-600 text-white">
+          <Button onClick={addProduct} className="bg-blue-600 hover:bg-blue-600 text-white">
             Ajouter
           </Button>
         </div>
@@ -121,15 +137,29 @@ const MedDetailsPage = () => {
                   <TableHead>ID</TableHead>
                   <TableHead>Nom</TableHead>
                   <TableHead>Quantité</TableHead>
+                  <TableHead>Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {products.map((p) => (
                   <TableRow key={p.id}>
-                    <TableCell>{p.id}</TableCell>
-                    <TableCell>{p.name}</TableCell>
-                    <TableCell>{p.quantity}</TableCell>
-                  </TableRow>
+  <TableCell colSpan={1}>{p.id}</TableCell>
+  <TableCell colSpan={1}>{p.name}</TableCell>
+  <TableCell colSpan={1}>{p.quantity}</TableCell>
+
+  {/* Right-aligned action buttons */}
+  <TableCell colSpan={1}>
+    <div className="flex justify-end gap-2">
+      <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+        Modifier
+      </Button>
+
+      <Button className="bg-red-600 hover:bg-red-700 text-white">
+        Supp
+      </Button>
+    </div>
+  </TableCell>
+</TableRow>
                 ))}
               </TableBody>
             </Table>
