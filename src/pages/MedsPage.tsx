@@ -181,7 +181,7 @@ const MedsPage = () => {
     { key: "nomDelg", label: "Nom Délégué" },
     { key: "gamme", label: "Gamme" },
     { key: "demandeDate", label: "Date de Demande" },
-    { key: "demendeNum", label: "N° de Date" },
+    { key: "demendeNum", label: "N° de Demande" },
     { key: "prospect", label: "Prospect" },
     { key: "action", label: "Action" },
     { key: "manifestation", label: "Manifestation" },
@@ -206,7 +206,7 @@ const MedsPage = () => {
       "Nom Délégué": d.nomDelg,
       Gamme: d.gamme,
       "Date Demande": formatDate(d.demandeDate),
-      "N° de Date": d.demendeNum,
+      "N° de Demande": d.demendeNum,
       Prospect: d.prospect,
       Action: d.action,
       Manifestation: d.manifestation,
@@ -248,7 +248,7 @@ const MedsPage = () => {
       <div className="flex flex-wrap items-center gap-4 mb-6">
         <Input
           className="max-w-xs bg-gray-800 text-gray-100 border-gray-700"
-          placeholder="Rechercher par N° de Date…"
+          placeholder="Rechercher par N° de Demande…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />

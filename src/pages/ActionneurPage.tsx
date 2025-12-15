@@ -18,9 +18,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, InfoIcon } from "lucide-react";
 import { useNavigate } from "react-router";
 import * as XLSX from "xlsx";
+import { Doctor } from "@/api/doctor";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // ---------------------------------------
 // FORMAT DATE (DD/MM/YYYY)
@@ -40,7 +50,7 @@ function formatDate(value: any) {
 // ---------------------------------------
 // TYPES
 // ---------------------------------------
-interface Doctor {
+interface DoctorI {
   id: string;
   zone: string;
   nomDelg: string;
@@ -53,7 +63,6 @@ interface Doctor {
   agence: string;
   factureNum: string;
   cheqRm: string;
-  productRequested: string;
   op: string;
   dateObtained: Date;
 }
@@ -88,7 +97,6 @@ const MedsPage = () => {
     agence: "",
     factureNum: "",
     cheqRm: "",
-    productRequested: "",
     op: "",
     dateObtained: "",
   });
@@ -97,8 +105,9 @@ const MedsPage = () => {
     const doctor: Doctor = {
       ...newDoctor,
       id: crypto.randomUUID(),
-      demandeDate: new Date(newDoctor.demandeDate),
-      dateObtained: newDoctor.dateObtained ? new Date(newDoctor.dateObtained) : null,
+      demandeDate: new Date(),
+   //   dateObtained: newDoctor.dateObtained ? new Date(newDoctor.dateObtained) : null,
+      dateObtained:new Date(),
     };
 
     setDoctors([...doctors, doctor]);
@@ -117,7 +126,6 @@ const MedsPage = () => {
       agence: "",
       factureNum: "",
       cheqRm: "",
-      productRequested: "",
       op: "",
       dateObtained: "",
     });
@@ -179,8 +187,7 @@ const MedsPage = () => {
     { key: "manifestation", label: "Manifestation" },
     { key: "agence", label: "Agence" },
     { key: "factureNum", label: "N° de Facture" },
-    { key: "cheqRm", label: "Chèque/Reemborsement" },
-    { key: "productRequested", label: "Produit demandé" },
+    { key: "cheqRm", label: "Chèque/Remborsement" },
     { key: "op", label: "OP" },
     { key: "dateObtained", label: "Date d'obtention" },
   ];
@@ -206,7 +213,6 @@ const MedsPage = () => {
       Agence: d.agence,
       "N° Facture": d.factureNum,
       "Chèque/Remborsement": d.cheqRm,
-      "Produit demandé": d.productRequested,
       OP: d.op,
       "Date d'obtention": formatDate(d.dateObtained),
     }));
@@ -235,7 +241,7 @@ const MedsPage = () => {
           Retour
         </Button>
 
-        <h1 className="text-4xl font-bold">Gestion des Achats</h1>
+        <h1 className="text-4xl font-bold">Gestion des Actions</h1>
       </div>
 
       {/* CONTROLS */}
@@ -247,13 +253,11 @@ const MedsPage = () => {
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <Button onClick={() => setAddModalOpen(true)}>Ajouter</Button>
+        <Button onClick={() => setAddModalOpen(true)}className="bg-blue-600 text-white">Ajouter</Button>
 
-        <Button variant="secondary" onClick={() => setProductModalOpen(true)}>
-          Ajouter un Produit
-        </Button>
+        
 
-        <Button onClick={handleExportExcel}>Exporter Excel</Button>
+        <Button onClick={handleExportExcel}className="bg-blue-600 text-white">Exporter Excel</Button>
       </div>
 
       {/* TABLE */}
@@ -262,13 +266,19 @@ const MedsPage = () => {
           <TableHeader>
             <TableRow className="bg-gray-700/50">
               {columns.map((c) => (
-                <TableHead key={c.key}>{c.label}</TableHead>
+                <TableHead key={c.key}
+                className="text-white"
+                >{c.label}</TableHead>
               ))}
-              <TableHead>Actions</TableHead>
+              <TableHead
+              className="text-white"
+              >
+                Plus d'info 
+              </TableHead>
             </TableRow>
           </TableHeader>
 
-          <TableBody>
+         {/*  <TableBody>
             {filteredDoctors.map((doctor) => (
               <TableRow key={doctor.id}>
                 {columns.map((c) => (
@@ -280,6 +290,14 @@ const MedsPage = () => {
                 ))}
 
                 <TableCell className="flex gap-3">
+                  <Button
+                    onClick={() =>
+                      navigate(`/medecines/${doctor.id}`, { state: { doctor } })
+                     }
+                 >
+                    Plus d'info
+                  </Button>
+
                   <Button
                     size="sm"
                     onClick={() => {
@@ -299,26 +317,67 @@ const MedsPage = () => {
                     }}
                   >
                     Produits
+                  </Button> 
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+ */}
+
+           <TableBody>
+            {Doctor.generateDummy().map((doctor) => (
+              <TableRow key={doctor.id}>
+                {columns.map((c) => (
+                  <TableCell key={c.key}>
+                    {c.key === "demandeDate" || c.key === "dateObtained"
+                      ? formatDate((doctor as any)[c.key])
+                      : (doctor as any)[c.key] || "—"}
+                  </TableCell>
+                ))}
+
+                <TableCell className="flex gap-3">
+                  <Button
+                    onClick={() =>
+                      navigate(`/medecines/${doctor.id}`)
+                     }
+                 >
+                    Plus d'info
                   </Button>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
+ 
         </Table>
       </div>
 
+
+
       {/* ADD MODAL */}
       <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
-        <DialogContent className="bg-gray-800 text-gray-100 border-gray-600">
+        <DialogContent className="bg-gray-800 text-gray-100 border-gray-600 max-h-4/5 overflow-scroll ">
           <DialogHeader>
             <DialogTitle>Ajouter une Action</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-3">
+
+          
+            <Input
+                  key={"zone"}
+                  type={"text"}
+                  placeholder={"Zone"}
+                  className="bg-gray-700 text-gray-100 border-gray-600"
+                  value={newDoctor["zone"]}
+                  onChange={(e) =>
+                    setNewDoctor({ ...newDoctor, ["zone"]: e.target.value })
+                  }
+                />
             {Object.keys(newDoctor).map((key) =>
               key !== "id" ? (
                 <Input
                   key={key}
+                  type={key=="demandeDate"?"date":"text"}
                   placeholder={key}
                   className="bg-gray-700 text-gray-100 border-gray-600"
                   value={newDoctor[key]}
@@ -366,47 +425,8 @@ const MedsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* PRODUCT MODAL */}
-      <Dialog open={productModalOpen} onOpenChange={setProductModalOpen}>
-        <DialogContent className="bg-gray-800 text-gray-100 border-gray-600">
-          <DialogHeader>
-            <DialogTitle>Ajouter un Produit</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <select
-              className="w-full bg-gray-700 text-gray-100 p-2 border border-gray-600 rounded"
-              value={selectedDoctorId}
-              onChange={(e) => setSelectedDoctorId(e.target.value)}
-            >
-              <option value="">Sélectionner…</option>
-              {doctors.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.nomDelg} – {d.demendeNum}
-                </option>
-              ))}
-            </select>
-
-            <Input
-              placeholder="Nom produit"
-              className="bg-gray-700 text-gray-100 border-gray-600"
-              value={productName}
-              onChange={(e) => setProductName(e.target.value)}
-            />
-
-            <Input
-              type="date"
-              className="bg-gray-700 text-gray-100 border-gray-600"
-              value={dateObtained}
-              onChange={(e) => setDateObtained(e.target.value)}
-            />
-          </div>
-
-          <DialogFooter>
-            <Button onClick={handleSaveProduct}>Enregistrer</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      
+      
     </div>
   );
 };

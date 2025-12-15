@@ -73,7 +73,7 @@ const MedDetailsPage = () => {
               <TableHead>Nom Délégué</TableHead>
               <TableHead>Gamme</TableHead>
               <TableHead>Date de Demande</TableHead>
-              <TableHead>N° de Date</TableHead>
+              <TableHead>N° de Demande</TableHead>
               <TableHead>Prospect</TableHead>
             </TableRow>
           </TableHeader>
@@ -112,7 +112,7 @@ const MedDetailsPage = () => {
             />
           </div>
           <div>
-            <label className="block mb-1">Quantité</label>
+            <label className="block mb-1">Prix du Produit</label>
             <input
               type="number"
               value={newProduct.quantity}
@@ -136,7 +136,7 @@ const MedDetailsPage = () => {
                 <TableRow className="bg-gray-700/50">
                   <TableHead>ID</TableHead>
                   <TableHead>Nom</TableHead>
-                  <TableHead>Quantité</TableHead>
+                  <TableHead>Prix du Produit</TableHead>
                   <TableHead>Action</TableHead>
                 </TableRow>
               </TableHeader>
@@ -155,7 +155,7 @@ const MedDetailsPage = () => {
       </Button>
 
       <Button className="bg-red-600 hover:bg-red-700 text-white">
-        Supp
+        Supprimer
       </Button>
     </div>
   </TableCell>
