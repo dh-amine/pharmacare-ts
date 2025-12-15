@@ -241,7 +241,7 @@ const MedsPage = () => {
           Retour
         </Button>
 
-        <h1 className="text-4xl font-bold">Gestion des Actions</h1>
+        <h1 className="text-4xl font-bold">Gestion des Achats</h1>
       </div>
 
       {/* CONTROLS */}
