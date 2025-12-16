@@ -21,7 +21,11 @@ import {
 import { ArrowLeft, InfoIcon } from "lucide-react";
 import { useNavigate } from "react-router";
 import * as XLSX from "xlsx";
+<<<<<<< HEAD
 import type{ Doctor } from "../types/doctor";
+=======
+import { Doctor } from "@/api/doctor";
+>>>>>>> 8dc3442b810c99095f86a3e99d00fffe5a086bab
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -241,7 +245,11 @@ const MedsPage = () => {
           Retour
         </Button>
 
+<<<<<<< HEAD
         <h1 className="text-4xl font-bold">Gestion des Actions</h1>
+=======
+        <h1 className="text-4xl font-bold">Gestion des Achats</h1>
+>>>>>>> 8dc3442b810c99095f86a3e99d00fffe5a086bab
       </div>
 
       {/* CONTROLS */}
