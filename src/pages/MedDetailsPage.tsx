@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from "react";
-<<<<<<< HEAD
 import { useParams } from "react-router";
-=======
-import { useLocation, useParams } from "react-router";
->>>>>>> 8dc3442b810c99095f86a3e99d00fffe5a086bab
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -13,23 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-<<<<<<< HEAD
 import type { Doctor } from "../types/doctor";
 import dayjs from "dayjs";
 import { fetchDoctorById } from "@/api/axios"; // <-- import the API function
-=======
-import { Doctor } from "@/api/doctor";
-import dayjs from "dayjs";
-/* interface DoctorDetail {
-  id: string;
-  zone: string;
-  nomDelg: string;
-  gamme: string;
-  demandeDate: string;
-  demendeNum: number;
-  prospect: string;
-} */
->>>>>>> 8dc3442b810c99095f86a3e99d00fffe5a086bab
 
 interface Product {
   id: number;
@@ -37,24 +19,11 @@ interface Product {
   quantity: number;
 }
 
-<<<<<<< HEAD
 const MedDetailsPage: React.FC = () => {
   const { id } = useParams();
   const [doctorDetails, setDoctorDetails] = useState<Doctor | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-=======
-const MedDetailsPage = () => {
-  const { id } = useParams();
-  // On met les infos du doctor dans un tableau
-  const [doctorDetails, setDoctorDetails] = useState<Doctor>();
-  useEffect(()=>{
-    if(id){
-      setDoctorDetails(Doctor.getById(id as string))
-      
-    }
-  },[id])
->>>>>>> 8dc3442b810c99095f86a3e99d00fffe5a086bab
 
   const [products, setProducts] = useState<Product[]>([]);
   const [newProduct, setNewProduct] = useState<Omit<Product, "id">>({
@@ -62,7 +31,6 @@ const MedDetailsPage = () => {
     quantity: 0,
   });
 
-<<<<<<< HEAD
   // Fetch doctor by ID when page loads
   useEffect(() => {
     if (!id) return;
@@ -96,15 +64,12 @@ const MedDetailsPage = () => {
   }, [id]);
 
   // Add product locally
-=======
->>>>>>> 8dc3442b810c99095f86a3e99d00fffe5a086bab
   const addProduct = () => {
     if (!newProduct.name || newProduct.quantity <= 0) return;
     setProducts([...products, { id: products.length + 1, ...newProduct }]);
     setNewProduct({ name: "", quantity: 0 });
   };
 
-<<<<<<< HEAD
   if (loading) return <p className="p-6 text-white">Chargement...</p>;
   if (error) return <p className="p-6 text-red-500">{error}</p>;
   if (!doctorDetails) return <p className="p-6 text-white">Aucune donnée trouvée.</p>;
@@ -117,24 +82,6 @@ const MedDetailsPage = () => {
 
       {/* Doctor info table */}
       <div className="rounded-lg border border-gray-700 bg-gray-800 overflow-x-auto">
-=======
-
-  if(!doctorDetails){
-    return <>
-     <div className="p-6 bg-gray-900 min-h-screen text-white space-y-8">
-       <h1 className="text-2xl font-bold mb-4"></h1>
-     </div>
-    </>
-  }
-  return (
-    <div className="p-6 bg-gray-900 min-h-screen text-white space-y-8">
-      <h1 className="text-2xl font-bold mb-4">Détails du Bon de commande - ID : {id}</h1>
-
-      {/* Tableau des informations du médecin */}
-      {
-        doctorDetails && <>
-        <div className="rounded-lg border border-gray-700 bg-gray-800 overflow-x-auto">
->>>>>>> 8dc3442b810c99095f86a3e99d00fffe5a086bab
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-700/50">
@@ -143,7 +90,6 @@ const MedDetailsPage = () => {
               <TableHead>Gamme</TableHead>
               <TableHead>Date de Demande</TableHead>
               <TableHead>N° de Demande</TableHead>
-<<<<<<< HEAD
               <TableHead>Nom Médecin</TableHead>
             </TableRow>
           </TableHeader>
@@ -161,31 +107,6 @@ const MedDetailsPage = () => {
       </div>
 
       {/* Add product */}
-=======
-              <TableHead>Prospect</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-           
-              <TableRow key={doctorDetails.id}>
-                <TableCell>{doctorDetails.zone}</TableCell>
-                <TableCell>{doctorDetails.nomDelg}</TableCell>
-                <TableCell>{doctorDetails.gamme}</TableCell>
-                <TableCell>{dayjs(doctorDetails.demandeDate).format("YYYY/MM/DD")}</TableCell>
-                <TableCell>{doctorDetails.demendeNum}</TableCell>
-                <TableCell>{doctorDetails.prospect}</TableCell>
-              </TableRow>
-          
-          </TableBody>
-        </Table>
-      </div>
-        
-        </>
-      }
-      
-
-      {/* Ajouter un produit */}
->>>>>>> 8dc3442b810c99095f86a3e99d00fffe5a086bab
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Ajouter un produit</h2>
         <div className="grid grid-cols-3 gap-4 items-end">
@@ -201,11 +122,7 @@ const MedDetailsPage = () => {
             />
           </div>
           <div>
-<<<<<<< HEAD
             <label className="block mb-1">Quantité</label>
-=======
-            <label className="block mb-1">Prix du Produit</label>
->>>>>>> 8dc3442b810c99095f86a3e99d00fffe5a086bab
             <input
               type="number"
               value={newProduct.quantity}
@@ -216,23 +133,15 @@ const MedDetailsPage = () => {
               className="p-2 rounded bg-gray-700 text-white w-full"
             />
           </div>
-<<<<<<< HEAD
           <Button
             onClick={addProduct}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
-=======
-          <Button onClick={addProduct} className="bg-blue-600 hover:bg-blue-600 text-white">
->>>>>>> 8dc3442b810c99095f86a3e99d00fffe5a086bab
             Ajouter
           </Button>
         </div>
 
-<<<<<<< HEAD
         {/* Products table */}
-=======
-        {/* Tableau des produits */}
->>>>>>> 8dc3442b810c99095f86a3e99d00fffe5a086bab
         {products.length > 0 && (
           <div className="rounded-lg border border-gray-700 bg-gray-800 overflow-x-auto mt-4">
             <Table>
@@ -240,19 +149,13 @@ const MedDetailsPage = () => {
                 <TableRow className="bg-gray-700/50">
                   <TableHead>ID</TableHead>
                   <TableHead>Nom</TableHead>
-<<<<<<< HEAD
                   <TableHead>Quantité</TableHead>
                   <TableHead>Actions</TableHead>
-=======
-                  <TableHead>Prix du Produit</TableHead>
-                  <TableHead>Action</TableHead>
->>>>>>> 8dc3442b810c99095f86a3e99d00fffe5a086bab
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {products.map((p) => (
                   <TableRow key={p.id}>
-<<<<<<< HEAD
                     <TableCell>{p.id}</TableCell>
                     <TableCell>{p.name}</TableCell>
                     <TableCell>{p.quantity}</TableCell>
@@ -267,25 +170,6 @@ const MedDetailsPage = () => {
                       </div>
                     </TableCell>
                   </TableRow>
-=======
-  <TableCell colSpan={1}>{p.id}</TableCell>
-  <TableCell colSpan={1}>{p.name}</TableCell>
-  <TableCell colSpan={1}>{p.quantity}</TableCell>
-
-  {/* Right-aligned action buttons */}
-  <TableCell colSpan={1}>
-    <div className="flex justify-end gap-2">
-      <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-        Modifier
-      </Button>
-
-      <Button className="bg-red-600 hover:bg-red-700 text-white">
-        Supprimer
-      </Button>
-    </div>
-  </TableCell>
-</TableRow>
->>>>>>> 8dc3442b810c99095f86a3e99d00fffe5a086bab
                 ))}
               </TableBody>
             </Table>
